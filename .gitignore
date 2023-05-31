@@ -1,3 +1,5 @@
-venv/
-.env
+# add config.py to gitignore
+config.py
 __pycache__/
+.git
+.conda

@@ -1,15 +1,33 @@
-import os
+import sys
+import streamlit as st
+from PIL import Image
 
-import anthropic
-from flask import Flask, jsonify
-from dotenv import load_dotenv
+from helper import mine_document
 
-load_dotenv()
+# Title
+st.title("AI-based Document Analysis")
 
-app = Flask(__name__)
-anthropic_client = anthropic.Client(api_key=os.getenv("ANTHROPIC_API_KEY"))
+# Instruction
+st.write("Please upload a document for analysis")
 
+# File uploader allows user to upload their PDF file
+file = st.file_uploader("Upload a PDF document", type=['pdf'])
 
-@app.route("/", methods=("GET", "POST"))
-def index():
-    return jsonify({"hello": "world"})
+# check if a file is uploaded
+if file is not None:
+
+  # convert the file to bytes
+  pdf_bytes = file.read()
+
+  # Then use PyPDF2 or other PDF processing libraries to process the pdf file
+  # note: this might require additional steps since file uploaded is in bytes
+
+  # you may have to write the bytes data to a temporary file before using it
+  with open("temp.pdf", "wb") as f:
+    f.write(pdf_bytes)
+
+  # call your mine_case or summarize_article function on the temp file
+  result = mine_document('temp.pdf') # or summarize_article('temp.pdf')
+
+  # display the results on Streamlit
+  st.write(result)
