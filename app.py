@@ -3,6 +3,7 @@ import streamlit as st
 from PIL import Image
 
 from helper import mine_document
+from audio import generate_audio_file
 
 # Title
 st.title("AI-based Document Analysis")
@@ -28,6 +29,8 @@ if file is not None:
 
     # call your mine_case or summarize_article function on the temp file
     result = mine_document('temp.pdf')  # or summarize_article('temp.pdf')
+
+    generate_audio_file(result, "explanations")
 
     # display the results on Streamlit
     st.write(result)
