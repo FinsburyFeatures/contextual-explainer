@@ -4,3 +4,5 @@ __pycache__/
 .git
 .conda
 venv/
+explanations.mp3
+temp.pdf
