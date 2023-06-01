@@ -5,69 +5,68 @@ import anthropic
 
 # Initialize the anthropic client
 try:
-  anthropic_client = anthropic.Client(config.ANTHROPIC_API_KEY)
+    anthropic_client = anthropic.Client(config.ANTHROPIC_API_KEY)
 
 except KeyError:
-  sys.stderr.write("""
+    sys.stderr.write("""
   You haven't set up your API key yet.
   
   If you don't have an API key yet, set on up on Anthropic.
 
-  Then, open the Secrets Tool and add OPENAI_API_KEY as a secret.
+  Then, open the Secrets Tool and add ANTHROPIC_API_KEY as a secret.
   """)
-  exit(1)
+    exit(1)
 
 
 def mine_document(pdf_file) -> str:
-  """
-    Function to process legal case files.
-    This function reads a pdf case file, processes it with an AI model, 
-    and returns the processed results.
-
-    Args:
-        pdf_file (pdf): The uploaded pdf file.
-
-    Returns:
-        str: Result from the AI model.
-
-    Raises:
-        ValueError: If the number of tokens in the text exceeds 100,000.
     """
+      Function to process pdf files.
+      This function reads a pdf file, processes it with an AI model, 
+      and returns the processed results.
 
-  # Create a PdfReader object for the file at the given path.
-  reader = PdfReader(pdf_file)
+      Args:
+          pdf_file (pdf): The uploaded pdf file.
 
-  # Extract the text from each page of the pdf file and join them into a single string.
-  text = "\n".join([page.extract_text() for page in reader.pages])
+      Returns:
+          str: Result from the AI model.
 
-  
-  # Construct the prompt for the AI model, including the text of the case file
-  # and a request for the AI to extract key details from the text.
-  extract = " here's a case file extract in <case> tags <case>{text}</case>"
-  key_pieces = " understand then present the key pieces such as case ID, date, Plaintiff, Appellent, \
-                what is the case type, jurisdiction, a short summary, sentiment and its impact on business, \
-                and adverse findings, and outcome and put them in separate xml tags."
-  
-  prompt = (
-      f"{anthropic.HUMAN_PROMPT}{extract}\n{anthropic.HUMAN_PROMPT}{key_pieces}\n\n{anthropic.AI_PROMPT}\n\ncase:"
-  )
+      Raises:
+          ValueError: If the number of tokens in the text exceeds 100,000.
+      """
 
-  # Calculate the number of tokens in the text.
-  no_tokens = anthropic.count_tokens(text)
+    # Create a PdfReader object for the file at the given path.
+    reader = PdfReader(pdf_file)
 
-  # Print the number of tokens.
-  print(f"Number of tokens in text: {no_tokens}")
+    # Extract the text from each page of the pdf file and join them into a single string.
+    article_text = "\n".join([page.extract_text() for page in reader.pages])
 
-  # If the number of tokens is more than 100,000, raise an error.
-  if no_tokens > 100000:
-    raise ValueError(f"Text is too long {no_tokens}.")
+    print(article_text)
 
+    # Construct the prompt for the AI model
+    contextual_prompt = "From the following text, please extract ten key concepts. Please explain each concept with an example."
+    instruction_prompt = article_text
+    prompt = (
+        f"{anthropic.HUMAN_PROMPT}{contextual_prompt}\n{anthropic.HUMAN_PROMPT}{instruction_prompt}\n\n{anthropic.AI_PROMPT}"
+    )
 
-  # Make a call to the AI model, using the constructed prompt and a specified model,
-  # and limit the result to 1000 tokens.
-  res = anthropic_client.completion(prompt=prompt,
-                                    model="claude-v1.3-100k",
-                                    max_tokens_to_sample=1000)
+    # \n\n{anthropic.AI_PROMPT}
+    # The above saved here for convenience - do we need/want this in the prompt?
 
-  # Return the result from the AI model, which contains the extracted case details in XML format.
-  return res["completion"]
+    # Calculate the number of tokens in the text.
+    token_count = anthropic.count_tokens(article_text)
+
+    # Print the number of tokens.
+    print(f"Number of tokens in text: {token_count}")
+
+    # If the number of tokens is more than 100,000, raise an error.
+    if token_count > 100000:
+        raise ValueError(f"Text is too long {token_count}.")
+
+    # Make a call to the AI model, using the constructed prompt and a specified model,
+    # and limit the result to 1000 tokens.
+    res = anthropic_client.completion(prompt=prompt,
+                                      model="claude-v1.3-100k",
+                                      max_tokens_to_sample=1000)
+
+    # Return the result from the AI model, which contains the extracted case details in XML format.
+    return res["completion"]
