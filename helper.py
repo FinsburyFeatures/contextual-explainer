@@ -41,10 +41,9 @@ def mine_document(pdf_file) -> str:
     article_text = "\n".join([page.extract_text() for page in reader.pages])
 
     # Construct the prompt for the AI model
-    contextual_prompt = "From the following text, please extract ten key concepts. Please explain each concept with an example."
-    instruction_prompt = article_text
+    explanations_prompt = "From the following text, please extract ten key concepts. Please explain each concept with an example."
     prompt = (
-        f"{anthropic.HUMAN_PROMPT}{contextual_prompt}\n{anthropic.HUMAN_PROMPT}{instruction_prompt}\n\n{anthropic.AI_PROMPT}"
+        f"{anthropic.HUMAN_PROMPT}{explanations_prompt}\n{anthropic.HUMAN_PROMPT}{article_text}\n\n{anthropic.AI_PROMPT}"
     )
 
     # \n\n{anthropic.AI_PROMPT}
@@ -62,9 +61,18 @@ def mine_document(pdf_file) -> str:
 
     # Make a call to the AI model, using the constructed prompt and a specified model,
     # and limit the result to 1000 tokens.
-    res = anthropic_client.completion(prompt=prompt,
-                                      model="claude-v1.3-100k",
-                                      max_tokens_to_sample=1000)
+    explanation_response = anthropic_client.completion(prompt=prompt,
+                                                       model="claude-v1.3-100k",
+                                                       max_tokens_to_sample=2000)
 
-    # Return the result from the AI model, which contains the extracted case details in XML format.
-    return res["completion"]
+    methodological_instruction = "From the following text, please extract some methodological concepts that are used in the text. Please explain each methodological concept with an example. For each methodological concept please include some disscusion and different points of view from the wider literature."
+    methodological_prompt = (
+        f"{anthropic.HUMAN_PROMPT}{methodological_instruction}\n{anthropic.HUMAN_PROMPT}{article_text}\n\n{anthropic.AI_PROMPT}"
+    )
+
+    method_response = anthropic_client.completion(prompt=methodological_prompt,
+                                                  model="claude-v1.3-100k",
+                                                  max_tokens_to_sample=2000)
+
+    # Return the result from the AI model
+    return explanation_response["completion"] + "\n\n" + method_response["completion"]
