@@ -40,8 +40,6 @@ def mine_document(pdf_file) -> str:
     # Extract the text from each page of the pdf file and join them into a single string.
     article_text = "\n".join([page.extract_text() for page in reader.pages])
 
-    print(article_text)
-
     # Construct the prompt for the AI model
     contextual_prompt = "From the following text, please extract ten key concepts. Please explain each concept with an example."
     instruction_prompt = article_text
