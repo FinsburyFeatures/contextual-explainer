@@ -20,8 +20,8 @@ except KeyError:
 
 def mine_document(pdf_file) -> str:
     """
-      Function to process legal case files.
-      This function reads a pdf case file, processes it with an AI model, 
+      Function to process pdf files.
+      This function reads a pdf file, processes it with an AI model, 
       and returns the processed results.
 
       Args:
@@ -38,28 +38,29 @@ def mine_document(pdf_file) -> str:
     reader = PdfReader(pdf_file)
 
     # Extract the text from each page of the pdf file and join them into a single string.
-    text = "\n".join([page.extract_text() for page in reader.pages])
+    article_text = "\n".join([page.extract_text() for page in reader.pages])
 
-    # Construct the prompt for the AI model, including the text of the case file
-    # and a request for the AI to extract key details from the text.
-    extract = " here's a case file extract in <case> tags <case>{text}</case>"
-    key_pieces = " understand then present the key pieces such as case ID, date, Plaintiff, Appellent, \
-                what is the case type, jurisdiction, a short summary, sentiment and its impact on business, \
-                and adverse findings, and outcome and put them in separate xml tags."
+    print(article_text)
 
+    # Construct the prompt for the AI model
+    contextual_prompt = "From the following text, please extract ten key concepts. Please explain each concept with an example."
+    instruction_prompt = article_text
     prompt = (
-        f"{anthropic.HUMAN_PROMPT}{extract}\n{anthropic.HUMAN_PROMPT}{key_pieces}\n\n{anthropic.AI_PROMPT}\n\ncase:"
+        f"{anthropic.HUMAN_PROMPT}{contextual_prompt}\n{anthropic.HUMAN_PROMPT}{instruction_prompt}\n\n{anthropic.AI_PROMPT}"
     )
 
+    # \n\n{anthropic.AI_PROMPT}
+    # The above saved here for convenience - do we need/want this in the prompt?
+
     # Calculate the number of tokens in the text.
-    no_tokens = anthropic.count_tokens(text)
+    token_count = anthropic.count_tokens(article_text)
 
     # Print the number of tokens.
-    print(f"Number of tokens in text: {no_tokens}")
+    print(f"Number of tokens in text: {token_count}")
 
     # If the number of tokens is more than 100,000, raise an error.
-    if no_tokens > 100000:
-        raise ValueError(f"Text is too long {no_tokens}.")
+    if token_count > 100000:
+        raise ValueError(f"Text is too long {token_count}.")
 
     # Make a call to the AI model, using the constructed prompt and a specified model,
     # and limit the result to 1000 tokens.
