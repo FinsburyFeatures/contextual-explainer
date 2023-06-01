@@ -31,6 +31,10 @@ if file is not None:
     result = mine_document('temp.pdf')  # or summarize_article('temp.pdf')
 
     generate_audio_file(result, "explanations")
+    with open('explanations.mp3', 'rb') as f:
+        audio_data = f.read()
 
     # display the results on Streamlit
     st.write(result)
+    st.download_button("Download as MP3", audio_data,
+                       file_name="explanations.mp3")
