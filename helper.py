@@ -1,11 +1,11 @@
-import config
+import sys
 from PyPDF2 import PdfReader
-import config
+import streamlit as st
 import anthropic
 
 # Initialize the anthropic client
 try:
-    anthropic_client = anthropic.Client(config.ANTHROPIC_API_KEY)
+    anthropic_client = anthropic.Client(st.secrets.ANTHROPIC_API_KEY)
 
 except KeyError:
     sys.stderr.write("""
