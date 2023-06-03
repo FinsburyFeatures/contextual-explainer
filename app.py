@@ -6,10 +6,10 @@ from helper import mine_document
 from audio import generate_audio_file
 
 # Title
-st.title("AI-based Document Analysis")
+st.title("PreReader")
 
 # Instruction
-st.write("Please upload a document for analysis")
+st.write("Please upload your document to get your pre-reading snippets")
 
 # File uploader allows user to upload their PDF file
 file = st.file_uploader("Upload a PDF document", type=['pdf'])
